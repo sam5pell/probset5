@@ -89,7 +89,7 @@ let get_links (source_link : WT.link) (page : string) : WT.LinkSet.set =
       let newpos = Str.match_end() in
       match link_of_string source_link link_string with
       | None -> loop newpos linkset
-      | Some link -> loop newpos (WT.LinkSet.insert link linkset)
+      | Some link -> loop newpos (WT.LinkSet.insert linkset link)
     with
       Not_found -> linkset
   in
@@ -127,13 +127,13 @@ let get_page (link : WT.link) : WT.page option =
 
 (* Compute the pagerank of a link index *)
 let compute_pagerank (index : WT.LinkIndex.dict) : PR.RankDict.dict =
-  let links = WT.LinkIndex.foldl (fun l _ v -> WT.LinkSet.union l v)
+  let links = WT.LinkIndex.fold (fun l _ v -> WT.LinkSet.union l v)
            WT.LinkSet.empty index in
   let pages = WT.LinkSet.fold
     (fun s link ->
      match get_page link with
      | None -> s
-     | Some page -> PR.PageSet.insert page s) PR.PageSet.empty links in
+     | Some page -> PR.PageSet.insert s page) PR.PageSet.empty links in
   let link_graph = PR.graph_of_pages pages in
   PR.dict_of_ns (PR.EngineRanker.rank link_graph) ;;
 

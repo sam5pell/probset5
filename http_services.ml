@@ -31,7 +31,7 @@ the client.
 (* std_response_header -- The standard HTTP response header *)
 let std_response_header : string =
   "HTTP/1.1 200 OK\r\n"
-  ^ "Server: AskShiebs_soln/0.0\n"
+  ^ "Server: AskShiebs/0.0\n"
   ^ "content-type: text/html; charset=utf-8\n"
   ^ "Content-Language: en-us\n"
   ^ "Connection: close\n\n" ;;

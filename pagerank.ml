@@ -1,6 +1,6 @@
 (*
                          CS 51 Problem Set 5
-		   A Web Crawler and Search Engine
+                   A Web Crawler and Search Engine
                              Spring 2017
 
 Code for the page-rank algorithm, including a dummy indegree algorithm
@@ -17,33 +17,33 @@ open WT ;;
 (* Dictionaries mapping links to their ranks. Higher is better. *)
 module RankDict =
   Dict.Make (struct
-	      type key = link
-	      type value = float
-	      let compare = link_compare
-	      let string_of_key = string_of_link
-	      let string_of_value = string_of_float
-	      let gen_key () = { host = ""; port = 0; path = "" }
-	      let gen_key_gt _ = gen_key ()
-	      let gen_key_lt _ = gen_key ()
-	      let gen_key_random () = gen_key ()
-	      let gen_key_between _ _ = None
-	      let gen_value () = 0.0
-	      let gen_pair () = (gen_key(), gen_value())
-	    end)
+              type key = link
+              type value = float
+              let compare = link_compare
+              let string_of_key = string_of_link
+              let string_of_value = string_of_float
+              let gen_key () = { host = ""; port = 0; path = "" }
+              let gen_key_gt _ = gen_key ()
+              let gen_key_lt _ = gen_key ()
+              let gen_key_random () = gen_key ()
+              let gen_key_between _ _ = None
+              let gen_value () = 0.0
+              let gen_pair () = (gen_key(), gen_value())
+            end)
 
 module PageSet =
   MS.Make (struct
-	       type t = page
-	       let compare = (fun a b -> link_compare a.url b.url)
-	       let string_of_t = string_of_page
-	       let gen () = 
-		 let inital_link = { host = ""; port = 0; path = "" } in 
-		 { url = inital_link; links = LinkSet.empty; words = [] }
-	       let gen_lt _ = gen ()
-	       let gen_gt _ = gen ()
-	       let gen_random () = gen ()
-	       let gen_between _ _ = None
-	     end)
+               type t = page
+               let compare = (fun a b -> link_compare a.url b.url)
+               let string_of_t = string_of_page
+               let gen () =
+                 let inital_link = { host = ""; port = 0; path = "" } in
+                 { url = inital_link; links = LinkSet.empty; words = [] }
+               let gen_lt _ = gen ()
+               let gen_gt _ = gen ()
+               let gen_random () = gen ()
+               let gen_between _ _ = None
+             end)
 
 module PageGraph = G.Graph (
   struct
@@ -65,7 +65,7 @@ module PageScore = NS.NodeScore (
 let graph_of_pages (pages : PageSet.set) : PageGraph.graph =
   (* Only want graph nodes for pages we actually crawled *)
   let crawled_links =
-    PageSet.fold (fun s page -> LinkSet.insert page.url s)
+    PageSet.fold (fun s page -> LinkSet.insert s page.url)
       LinkSet.empty pages
   in
   let add_links page graph =
@@ -139,14 +139,14 @@ struct
 end
 
 
-  
+
 
 (*****************************************************************)
 (* CHALLENGE PROBLEM:   Random Walk Ranker                       *)
 (*****************************************************************)
-   
+
 (*
-#else 
+#else
 
 #endif
 module type QUANTUM_PARAMS =
@@ -210,8 +210,8 @@ struct
                   let weight_for_each = (1.0 -. alpha) *. node_weight /. (num_neighbors +. 1.0)
                   in
                   let added_neighbors = List.fold_left
-		      (fun r neighbor -> NS.add_score r neighbor weight_for_each)
-		      n neighbors in
+                      (fun r neighbor -> NS.add_score r neighbor weight_for_each)
+                      n neighbors in
                   (* Don't forget to add the score for the node itself *)
                   NS.add_score added_neighbors node weight_for_each
         in
@@ -337,7 +337,7 @@ end
 
 (* change this to change which ranker we use! *)
 module EngineRanker = InDegreeRanker (PageGraph) (PageScore)
- 
+
   (*
      = PR.RandomWalkRanker (PR.PageGraph) (PR.PageScore) (struct
        let do_random_jumps = Some 0.20
