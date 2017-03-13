@@ -188,7 +188,7 @@ let process_request (client_fd : Unix.file_descr)
   in
   let is_safe (q : string) : bool =
     (* At least check that the passed in path doesn't contain .. *)
-    (* These checks *could* definitely be made more exhaustice *)
+    (* These checks *could* definitely be made more exhaustive *)
     let r = Str.regexp_string ".." in
     try
       let _ = Str.search_forward r q 0 in
