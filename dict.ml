@@ -52,19 +52,19 @@ module type DICT =
           fold f u dict
 
        The fold function f must have the type:
-          key -> value -> 'a -> 'a
+          'a -> key -> value -> 'a
        and the base case u has type 'a.
 
        If the dictionary has the (key,value) pairs (in any order)
           (k1,v1), (k2,v2), (k3,v3), ... (kn,vn)
        then fold f d u should return:
-           f (f (... ((f(u k1 v1) k2 v2) k3 v3) ... kn vn)
+           (f (... (f (f (u k1 v1) k2 v2) k3 v3) ...) kn vn)
      *)
     val fold : ('a -> key -> value -> 'a) -> 'a -> dict -> 'a
 
     (* Functions to convert the values of these types to strings for
        debugging and logging *)
-    val string_of_key: key -> string
+    val string_of_key : key -> string
     val string_of_value : value -> string
     val string_of_dict : dict -> string
 
@@ -87,6 +87,7 @@ module type DICT_ARG =
   sig
     type key
     type value
+
     val compare : key -> key -> ordering
     val string_of_key : key -> string
     val string_of_value : value -> string
@@ -125,6 +126,7 @@ module IntStringDictArg : (DICT_ARG with type key = int
   struct
     type key = int
     type value = string
+
     let compare x y = if x < y then Less else if x > y then Greater else Equal
     let string_of_key = string_of_int
     let string_of_value v = v
@@ -158,7 +160,7 @@ module IntStringDictArg : (DICT_ARG with type key = int
         (current_index := 0; lst_n possible_values index)
       else
         (current_index := index + 1; lst_n possible_values index)
-    let gen_pair () = (gen_key_random(), gen_value())
+    let gen_pair () = (gen_key_random (), gen_value ())
   end
 
 (*......................................................................
@@ -172,8 +174,8 @@ module IntStringDictArg : (DICT_ARG with type key = int
 module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
                                        and type value = D.value) =
   struct
-    type key = D.key;;
-    type value = D.value;;
+    type key = D.key ;;
+    type value = D.value ;;
 
     (* INVARIANT: keys in left dict are all less than key; keys in
        right dict are all greater than key; no duplicate keys *)
@@ -190,12 +192,12 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
          match D.compare k k1 with
          | Equal -> Some v1
          | Less -> lookup dl k
-         | Greater -> lookup dr k
+         | Greater -> lookup dr k ;;
 
     let member d k =
       match lookup d k with
       | None -> false
-      | Some _ -> true
+      | Some _ -> true ;;
 
     let rec insert d k v =
       match d with
@@ -204,7 +206,7 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
          (match D.compare k k1 with
           | Equal -> T(dl, (k,v), dr)
           | Less -> T(insert dl k v, kv, dr)
-          | Greater -> T(dl, kv, insert dr k v))
+          | Greater -> T(dl, kv, insert dr k v)) ;;
 
     let rec max d =
       match d with
@@ -212,7 +214,7 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
       | T(_dl, _kv, dr) ->
          match dr with
          | E -> Some d
-         | _ -> max dr
+         | _ -> max dr ;;
 
     exception Dict_internal_error
 
@@ -233,7 +235,7 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
                | None -> raise Dict_internal_error
                | Some E -> raise Dict_internal_error
                | Some T(_, ((km, _vm) as kvm), _) ->
-                  T((remove dl km), kvm, dr)
+                  T((remove dl km), kvm, dr) ;;
 
     let rec fold f u d =
       match d with
@@ -241,12 +243,11 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
       | T(dl, (k,v), dr) ->
          f (fold f (fold f u dl) dr) k v ;;
 
-
     let choose d =
       match d with
       | E -> None
       | T(_dl, (k,v), _dr) ->
-         Some (k, v, (remove d k))
+         Some (k, v, (remove d k)) ;;
 
     let string_of_key = D.string_of_key
     let string_of_value = D.string_of_value
@@ -258,7 +259,7 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
                ^ D.string_of_value v
                ^ ")\n"
                ^ str ) in
-      fold f "end\n" d
+      fold f "end\n" d ;;
 
     (****************************************************************)
     (* Tests for the functor                                        *)
@@ -268,11 +269,11 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
 
     (* adds a list of (key,value) pairs in left-to-right order *)
     let insert_list (d: dict) (lst: (key * value) list) : dict =
-      List.fold_left (fun r (k,v) -> insert r k v) d lst
+      List.fold_left (fun r (k,v) -> insert r k v) d lst ;;
 
     (* adds a list of (key,value) pairs in right-to-left order *)
     let insert_list_reversed (d: dict) (lst: (key * value) list) : dict =
-      List.fold_right (fun (k,v) r -> insert r k v) lst d
+      List.fold_right (fun (k,v) r -> insert r k v) lst d ;;
 
     (* generates a (key,value) list with n distinct keys in increasing order *)
     let generate_pair_list (size: int) : (key * value) list =
@@ -282,45 +283,41 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
           let new_current = D.gen_key_gt current in
           (new_current, D.gen_value()) :: (helper (size - 1) new_current)
       in
-      helper size (D.gen_key ())
+      helper size (D.gen_key ()) ;;
 
     (* generates a (key,value) list with keys in random order *)
     let rec generate_random_list (size: int) : (key * value) list =
       if size <= 0 then []
       else
-        (D.gen_key_random (), D.gen_value ()) :: (generate_random_list (size - 1))
+        (D.gen_key_random (), D.gen_value ()) ::
+          (generate_random_list (size - 1)) ;;
 
     let test_insert () =
       let pairs1 = generate_pair_list 26 in
       let d1 = insert_list empty pairs1 in
       List.fold_left (fun hd (k,v) ->
-                        hd && (lookup d1 k = Some v)) true pairs1
+                        hd && (lookup d1 k = Some v)) true pairs1 ;;
 
     let test_remove () =
       let pairs1 = generate_pair_list 26 in
       let d1 = insert_list empty pairs1 in
       List.fold_left
         (fun hd (k,_) ->
-         let r = remove d1 k in
-         List.fold_left
-           (fun _hd2 (k2,v2) ->
-            if k = k2 then hd && (lookup r k2 = None)
-            else hd && (lookup r k2 = Some v2)
-           ) true pairs1
-        ) true pairs1
+          let r = remove d1 k in
+          List.fold_left
+            (fun _hd2 (k2,v2) ->
+              if k = k2 then hd && (lookup r k2 = None)
+              else hd && (lookup r k2 = Some v2))
+            true pairs1)
+        true pairs1 ;;
 
+    let test_lookup () = true ;;
 
-    let test_lookup () =
-      true
+    let test_choose () = true ;;
 
-    let test_choose () =
-      true
+    let test_member () = true ;;
 
-    let test_member () =
-      true
-
-    let test_fold () =
-      true
+    let test_fold () = true ;;
 
     let run_tests () =
       test_insert()
@@ -328,7 +325,7 @@ module BSTDict (D : DICT_ARG) : (DICT with type key = D.key
       && test_lookup()
       && test_choose()
       && test_member()
-      && test_fold()
+      && test_fold() ;;
 
   end
 

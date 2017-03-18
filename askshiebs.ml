@@ -1,17 +1,17 @@
 (*
                          CS 51 Problem Set 5
-		   A Web Crawler and Search Engine
+                   A Web Crawler and Search Engine
                              Spring 2017
 
 This file is the top-level code for a simple web crawler and search engine.
  *)
 
-module AT = Askshiebs_tests;;
-module CS = Crawler_services;;
-module CR = Crawl;;
-module PR = Pagerank;;
-module WT = Webtypes;;
-module HS = Http_services;;
+module AT = Askshiebs_tests ;;
+module CS = Crawler_services ;;
+module CR = Crawl ;;
+module PR = Pagerank ;;
+module WT = Webtypes ;;
+module HS = Http_services ;;
 
 (* server index ranks -- Runs a web server serving up a search engine
    with the provided index and ranks: opens a socket on the server
@@ -59,9 +59,10 @@ let main () =
 
 (* If called directly, run the server. *)
 try
-  let _ = Str.search_forward (Str.regexp
-				"askshiebs\\.\\(byte\\|native\\)")
-			     (Sys.argv.(0)) 0 in
+  let _ =
+    Str.search_forward
+      (Str.regexp "askshiebs\\.\\(byte\\|native\\)")
+      (Sys.argv.(0)) 0 in
   main ()
 with Not_found -> 
   Printf.printf "Running from test; will not start server.\n" ;;

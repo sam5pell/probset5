@@ -7,8 +7,8 @@ Definitions for node scores maps, which are used as part of the
 page-rank algorithm.
  *)
 
-open Order
-open Graph
+open Order ;;
+open Graph ;;
 
 (* A NodeScore is a mapping from nodes to floating point scores.  It
    adds a bit to the functionality of a dictionary. In particular, it
@@ -17,8 +17,10 @@ open Graph
 module type NODE_SCORE =
   sig
     module N : NODE
+
     type node = N.node
     type node_score_map
+
     val empty : node_score_map
     val scale : node_score_map -> float -> node_score_map
 
@@ -50,28 +52,32 @@ module type NODE_SCORE =
 module NodeScore(NA: NODE) : (NODE_SCORE with module N = NA) =
   struct
     module N = NA
+
     type node = N.node
 
-    module D = Dict.Make(
-                   struct
-                     type key = node
-                     type value = float
-                     let compare = N.compare
-                     let string_of_key = N.string_of_node
-                     let string_of_value = string_of_float
-                     let gen_key = N.gen
-                     let gen_key_lt _ = N.gen ()
-                     let gen_key_gt _ = N.gen ()
-                     let gen_key_random = N.gen
-                     let gen_key_between _ _ = None
-                     let gen_value () = 0.0
-                     let gen_pair () = (gen_key(),gen_value())
-                   end)
+    module D =
+      Dict.Make(struct
+        type key = node
+        type value = float
+        let compare = N.compare
+        let string_of_key = N.string_of_node
+        let string_of_value = string_of_float
+        let gen_key = N.gen
+        let gen_key_lt _ = N.gen ()
+        let gen_key_gt _ = N.gen ()
+        let gen_key_random = N.gen
+        let gen_key_between _ _ = None
+        let gen_value () = 0.0
+        let gen_pair () = (gen_key(),gen_value())
+      end)
 
     type node_score_map = D.dict
+
     let empty = D.empty
+
     let scale ns v =
       D.fold (fun r n s -> D.insert r n (v *. s)) D.empty ns
+
     let sum ns =
       D.fold (fun r _ s -> s +. r) 0.0 ns
 

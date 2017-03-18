@@ -1,6 +1,6 @@
 (*
                          CS 51 Problem Set 5
-		   A Web Crawler and Search Engine
+                   A Web Crawler and Search Engine
                              Spring 2017
 
 Type definitions and important modules used throughout this problem set. Defines
@@ -12,7 +12,7 @@ Type definitions and important modules used throughout this problem set. Defines
 
  *)
 
-module M = Myset;; 
+module M = Myset ;; 
 
 (*----------------------------------------------------------------------
   Links
@@ -35,29 +35,28 @@ let link_compare (x:link) (y:link) : Order.ordering =
   match Order.string_compare x.host y.host with
   | Equal ->
      (match Order.int_compare x.port y.port with
-      | Equal -> (match Order.string_compare x.path y.path with
-                  | Equal -> Equal
-                  | ans -> ans)
+      | Equal -> 
+          (match Order.string_compare x.path y.path with
+           | Equal -> Equal
+           | ans -> ans)
       | ans -> ans)
   | ans -> ans
 ;;
-
 (*......................................................................
   LinkSet
  *)
   
-module LinkSet = M.Make(
-  struct
+module LinkSet = 
+  M.Make (struct
     type t = link
     let compare = link_compare
     let string_of_t = string_of_link
-    let gen () = {host = ""; port = 0; path = ""}
+    let gen () = { host = ""; port = 0; path = "" }
     let gen_lt _  = gen ()
     let gen_gt _  = gen ()
     let gen_random ()  = gen ()
     let gen_between _ _  = None
-  end
-)
+  end)
 
 (*......................................................................
   LinkIndex
@@ -67,24 +66,23 @@ module LinkSet = M.Make(
   LinkSet are links to web-pages that reference that word 
  *)
 
-module LinkIndex =
-  Dict.Make(
-      struct
-	type key = string
-	type value = LinkSet.set
-	let compare = Order.string_compare
-	let string_of_key = (fun s -> s)
-	let string_of_value = LinkSet.string_of_set
-				
-	(* These functions are for testing purposes *)
-	let gen_key () = ""
-	let gen_key_gt _ = gen_key ()
-	let gen_key_lt _ = gen_key ()
-	let gen_key_random () = gen_key ()
-	let gen_key_between _ _ = None
-	let gen_value () = LinkSet.empty
-	let gen_pair () = (gen_key(),gen_value())
-      end)
+module LinkIndex = 
+  Dict.Make (struct
+    type key = string
+    type value = LinkSet.set
+    let compare = Order.string_compare
+    let string_of_key = (fun s -> s)
+    let string_of_value = LinkSet.string_of_set
+          
+    (* These functions are for testing purposes *)
+    let gen_key () = ""
+    let gen_key_gt _ = gen_key ()
+    let gen_key_lt _ = gen_key ()
+    let gen_key_random () = gen_key ()
+    let gen_key_between _ _ = None
+    let gen_value () = LinkSet.empty
+    let gen_pair () = (gen_key(),gen_value())
+  end)
 
 (*----------------------------------------------------------------------
   Page

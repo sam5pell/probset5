@@ -1,19 +1,22 @@
 (*
-			 CS 51 Problem Set 5
-		   A Web Crawler and Search Engine
-			     Spring 2017
+                         CS 51 Problem Set 5
+                   A Web Crawler and Search Engine
+                             Spring 2017
 
 An interface and simple implementation of a set abstract datatype.
  *)
 
-open Order
+open Order ;;
 
 (* Interface for set modules *)
 
 module type SET =
   sig
-    type elt  (* type of elements in the set *)
-    type set  (* abstract type for the set *)
+    (* type of elements in the set *)
+    type elt
+
+    (* abstract type for the set *)
+    type set
 
     val empty : set
 
@@ -24,6 +27,7 @@ module type SET =
     val singleton : elt -> set
 
     val union : set -> set -> set
+
     val intersect : set -> set -> set
 
     (* remove an element from the set -- if the element isn't present,
@@ -41,9 +45,9 @@ module type SET =
     (* fold a function across the elements of the set in some
        unspecified order, using the calling convention of fold_left,
        that is, if the set s contains s1, ..., sn, then
-	   fold f u s
-      returns
-	   (f ... (f (f u s1) s2) ... sn)
+          fold f u s
+       returns
+          (f ... (f (f u s1) s2) ... sn)
      *)
     val fold : ('a -> elt -> 'a) -> 'a -> set -> 'a
 
@@ -93,9 +97,10 @@ module type COMPARABLE =
 module IntComparable : COMPARABLE =
   struct
     type t = int
-    let compare x y = if x < y then Less
-		      else if x > y then Greater
-		      else Equal
+    let compare x y =
+      if x < y then Less
+      else if x > y then Greater
+      else Equal
     let string_of_t = string_of_int
     let gen () = 0
     let gen_random =
@@ -131,42 +136,46 @@ module ListSet (C: COMPARABLE) : (SET with type elt = C.t) =
     let rec insert xs x =
       match xs with
       | [] -> [x]
-      | y::ys -> (match C.compare x y with
-		  | Greater -> y::(insert ys x)
-		  | Equal -> xs
-		  | Less -> x::xs)
+      | y :: ys ->
+          match C.compare x y with
+          | Greater -> y :: (insert ys x)
+          | Equal -> xs
+          | Less -> x :: xs
 
     let union xs ys = List.fold_left insert xs ys
 
     let rec remove xs y =
       match xs with
       | [] -> []
-      | x::xs1 -> (match C.compare y x with
-		   | Equal -> xs1
-		   | Less -> xs
-		   | Greater -> x::(remove xs1 y))
+      | x :: xs1 -> 
+          match C.compare y x with
+          | Equal -> xs1
+          | Less -> xs
+          | Greater -> x :: (remove xs1 y)
 
     let rec intersect xs ys =
       match xs, ys with
       | [], _ -> []
       | _, [] -> []
-      | xh::xt, yh::yt -> (match C.compare xh yh with
-			   | Equal -> xh::(intersect xt yt)
-			   | Less -> intersect xt ys
-			   | Greater -> intersect xs yt)
+      | xh :: xt, yh :: yt -> 
+          match C.compare xh yh with
+          | Equal -> xh :: (intersect xt yt)
+          | Less -> intersect xt ys
+          | Greater -> intersect xs yt
 
     let rec member xs x =
       match xs with
       | [] -> false
-      | y::ys -> (match C.compare x y with
-		  | Equal -> true
-		  | Greater -> member ys x
-		  | Less -> false)
+      | y :: ys ->
+          match C.compare x y with
+          | Equal -> true
+          | Greater -> member ys x
+          | Less -> false
 
     let choose xs =
       match xs with
       | [] -> None
-      | x::rest -> Some (x,rest)
+      | x :: rest -> Some (x, rest)
 
     let fold = List.fold_left
 
@@ -186,7 +195,7 @@ module ListSet (C: COMPARABLE) : (SET with type elt = C.t) =
 
     let rec generate_random_list (size: int) : elt list =
       if size <= 0 then []
-      else (C.gen_random()) :: (generate_random_list (size - 1))
+      else (C.gen_random ()) :: (generate_random_list (size - 1))
 
     let test_insert () =
       let elts = generate_random_list 100 in
@@ -254,8 +263,8 @@ module DictSet(C : COMPARABLE) : (SET with type elt = C.t) =
 (*
     struct
     module D = Dict.Make(struct
-			  (* fill this in! *)
-			end)
+        (* fill this in! *)
+      end)
 
     type elt = D.key
     type set = D.dict

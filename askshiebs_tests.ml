@@ -1,12 +1,11 @@
 (*
-            CS 51 Problem Set 5
-       A Web Crawler and Search Engine
-               sSpring 2017
+                         CS 51 Problem Set 5
+                   A Web Crawler and Search Engine
+                             Spring 2017
 
 Functions for testing and timing the crawler, as well as for
 debugging the crawlers returned indexes and pageranks. All 
 functions to be defined here and called in askshiebs.ml
-
  *)
 
 open Webtypes ;; 
@@ -62,16 +61,18 @@ let time_crawler crawler num link =
   (* this prints out the time results and returns
    * the index *)
   call_reporting_time partially_applied link
+;;
 
 (* function that prints out the linkindex for debugging *)
 let debug_index (index : LinkIndex.dict) : unit =
-  (Printf.printf "\nIndex:\n";
+  Printf.printf "\nIndex:\n";
   print_string (LinkIndex.string_of_dict index);
-	flush_all())
+  flush_all ()
+;;
 
 (* function for debugging pagerank -- karma problem *)
 let debug_pageranks (ranks : RankDict.dict) : unit =
-    (Printf.printf "\nRanks:\n";
-     print_string (RankDict.string_of_dict ranks);
-     flush_all())
-
+    Printf.printf "\nRanks:\n";
+    print_string (RankDict.string_of_dict ranks);
+    flush_all ()
+;;

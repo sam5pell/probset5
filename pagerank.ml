@@ -7,7 +7,7 @@ Code for the page-rank algorithm, including a dummy indegree algorithm
 for computing page ranks.
  *)
 
-module WT = Webtypes;;
+module WT = Webtypes ;;
 module NS = Nodescore ;;
 module G = Graph ;;
 module MS = Myset ;;
@@ -17,44 +17,44 @@ open WT ;;
 (* Dictionaries mapping links to their ranks. Higher is better. *)
 module RankDict =
   Dict.Make (struct
-              type key = link
-              type value = float
-              let compare = link_compare
-              let string_of_key = string_of_link
-              let string_of_value = string_of_float
-              let gen_key () = { host = ""; port = 0; path = "" }
-              let gen_key_gt _ = gen_key ()
-              let gen_key_lt _ = gen_key ()
-              let gen_key_random () = gen_key ()
-              let gen_key_between _ _ = None
-              let gen_value () = 0.0
-              let gen_pair () = (gen_key(), gen_value())
-            end)
+    type key = link
+    type value = float
+    let compare = link_compare
+    let string_of_key = string_of_link
+    let string_of_value = string_of_float
+    let gen_key () = { host = ""; port = 0; path = "" }
+    let gen_key_gt _ = gen_key ()
+    let gen_key_lt _ = gen_key ()
+    let gen_key_random () = gen_key ()
+    let gen_key_between _ _ = None
+    let gen_value () = 0.0
+    let gen_pair () = (gen_key (), gen_value ())
+  end)
 
 module PageSet =
   MS.Make (struct
-               type t = page
-               let compare = (fun a b -> link_compare a.url b.url)
-               let string_of_t = string_of_page
-               let gen () =
-                 let inital_link = { host = ""; port = 0; path = "" } in
-                 { url = inital_link; links = LinkSet.empty; words = [] }
-               let gen_lt _ = gen ()
-               let gen_gt _ = gen ()
-               let gen_random () = gen ()
-               let gen_between _ _ = None
-             end)
+    type t = page
+    let compare = (fun a b -> link_compare a.url b.url)
+    let string_of_t = string_of_page
+    let gen () =
+      let inital_link = {host = ""; port = 0; path = ""} in
+      {url = inital_link; links = LinkSet.empty; words = []}
+    let gen_lt _ = gen ()
+    let gen_gt _ = gen ()
+    let gen_random () = gen ()
+    let gen_between _ _ = None
+  end)
 
-module PageGraph = G.Graph (
-  struct
+module PageGraph =
+  G.Graph (struct
     type node = link
     let compare = link_compare
     let string_of_node = string_of_link
     let gen () = {host=""; port=0; path=""}
   end)
 
-module PageScore = NS.NodeScore (
-  struct
+module PageScore = 
+  NS.NodeScore (struct
     type node = link
     let string_of_node = string_of_link
     let compare = link_compare
@@ -95,21 +95,22 @@ end
 
 (* Each node's rank is equal to the number of pages that link to it. *)
 module InDegreeRanker  (GA: G.GRAPH) (NSA: NS.NODE_SCORE with module N = GA.N) :
-  (RANKER with module G = GA with module NS = NSA) =
-struct
-  module G = GA
-  module NS = NSA
-  let rank (g : G.graph) =
-    let add_node_edges ns node =
-      let neighbors = match G.neighbors g node with
-        | None -> []
-        | Some xs -> xs
-      in
+    (RANKER with module G = GA with module NS = NSA) =
+  struct
+    module G = GA
+    module NS = NSA
+
+    let rank (g : G.graph) =
+      let add_node_edges ns node =
+        let neighbors = match G.neighbors g node with
+          | None -> []
+          | Some xs -> xs
+        in
         List.fold_left (fun ns' neighbor -> NS.add_score ns' neighbor 1.0) ns neighbors
-    in
-    let nodes = (G.nodes g) in
+      in
+      let nodes = G.nodes g in
       List.fold_left add_node_edges (NS.zero_node_score_map nodes) nodes
-end
+  end
 
 
 
@@ -127,9 +128,10 @@ sig
   val num_steps : int
 end
 
-module RandomWalkRanker (GA: G.GRAPH) (NSA: NS.NODE_SCORE with module N = GA.N)
-  (P : WALK_PARAMS) :
-  (RANKER with module G = GA with module NS = NSA) =
+module RandomWalkRanker (GA: G.GRAPH) 
+                        (NSA: NS.NODE_SCORE with module N = GA.N)
+                        (P : WALK_PARAMS)
+                      : (RANKER with module G = GA with module NS = NSA) =
 struct
   module G = GA
   module NS = NSA
