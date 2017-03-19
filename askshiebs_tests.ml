@@ -32,7 +32,9 @@ let crawler_tests () =
     | _ -> false in 
 
   (* test the crawler on the initial simple index link *)
-  let i = crawler num_pages_to_search initial_link in 
+  let initial_link_simple = 
+    {host = ""; port = 80; path = "./simple-html/index.html"} in 
+  let i = crawler num_pages_to_search initial_link_simple in 
 
   (* 
     take advantage of partial application & test if 
