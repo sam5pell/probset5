@@ -147,10 +147,7 @@ end
 (* CHALLENGE PROBLEM:   Random Walk Ranker                       *)
 (*****************************************************************)
 
-(*
-#else
-
-#endif
+(* 
 module type QUANTUM_PARAMS =
 sig
   (* What fraction of each node's score should be uniformly distributed
@@ -170,66 +167,10 @@ struct
   module G = GA
   module NS = NSA
 
-#ifndef SOLN
-  (* TODO - fill this in *)
-#else
-  let _ = if P.alpha > 1.0 || P.alpha < 0.0
-    then raise (Failure "alpha must be in [0.0,1.0]")
-    else ()
+    (* TODO - fill this in *)
 
-  (* Give every node weight 1.
-   * Repeat k times:
-   *    Take fraction alpha of weight from each node, spread it
-   *         evenly to all nodes
-   *    Take remaining (1-alpha) of weight and spread it evenly among
-   *                   outgoing edges
-   *       - assume that each node has an implicit link to itself
-   *)
-  let quantum k alpha g =
-    if G.is_empty g then NS.empty else
-      let nodes = G.nodes g in
-      let n = float_of_int (List.length nodes) in
-      let init_ns = NS.fixed_node_score_map nodes (1.0 /. n) in
-      (* At every round, will start with alpha / n spread evenly *)
-      let base_ns = NS.fixed_node_score_map nodes (alpha /. n) in
-      let dprint ns = if P.debug then
-          Printf.printf "Round %d: %s\n" k (NS.string_of_node_score_map ns)
-        else ()
-      in
-      let rec loop k ns =
-        let _ = dprint ns in
-        let process_node n node =
-          match G.neighbors g node with
-            | None -> n
-            | Some neighbors ->
-              let num_neighbors = float_of_int (List.length neighbors) in
-              (* Note: important to use ns instead of n here--
-               * need the old nodescore, not the
-               * possibly-already-updated one *)
-              match NS.get_score ns node with
-                | None -> ns  (* Shouldn't happen *)
-                | Some node_weight ->
-                  let weight_for_each = (1.0 -. alpha) *. node_weight /. (num_neighbors +. 1.0)
-                  in
-                  let added_neighbors = List.fold_left
-                      (fun r neighbor -> NS.add_score r neighbor weight_for_each)
-                      n neighbors in
-                  (* Don't forget to add the score for the node itself *)
-                  NS.add_score added_neighbors node weight_for_each
-        in
-        if k <= 0 then ns
-        else
-          let ns' = List.fold_left process_node base_ns nodes in
-          loop (k-1) ns'
-      in
-      loop k init_ns
+*) 
 
-  let rank (g : G.graph) =
-    (quantum P.num_steps P.alpha g)
-#endif
-end
-#ifndef SOLN
-*)
 
 (*******************  TESTS BELOW  *******************)
 (*
