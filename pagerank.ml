@@ -173,20 +173,16 @@ struct
 
 
 (*******************  TESTS BELOW  *******************)
-(*
+
 module TestInDegreeRanker =
 struct
-#ifndef SOLN
-  module G = NamedGraph
-#else
-  module G = NamedGraph_soln
-#endif
+  module G = G.NamedGraph
   let g = G.add_edge G.empty "a" "b";;
   let g2 = G.add_edge g "a" "c";;
 
-  module NS = NodeScore (struct
+  module NS = NS.NodeScore (struct
                            type node = string
-                           let compare = string_compare
+                           let compare = Order.string_compare
                            let string_of_node = fun x -> x
                            let gen () = ""
                          end);;
@@ -210,11 +206,7 @@ end
 
 module TestRandomWalkRanker =
 struct
-#ifndef SOLN
-  module G = NamedGraph
-#else
-  module G = NamedGraph_soln
-#endif
+  module G = G.NamedGraph
   let g = G.from_edges [("a","b") ;
                         ("b","c") ;
                         ("c","d") ;
@@ -223,13 +215,14 @@ struct
                         ("a","g") ;
                         ("g","a")]
 
-  module NS = NodeScore (struct
+  module NS = NS.NodeScore (struct
                            type node = string
-                           let compare = string_compare
+                           let compare = Order.string_compare
                            let string_of_node = fun x -> x
                            let gen () = ""
                          end);;
 
+  (* Uncomment this to test!
   module Ranker = RandomWalkRanker (G) (NS)
     (struct
        let do_random_jumps = None
@@ -239,44 +232,40 @@ struct
   let ns = Ranker.rank g
   let _ = Printf.printf "Testing RandomWalkRanker:\n NS: %s\n"
     (NS.string_of_node_score_map ns)
-
+  *)
 (* That's the problem with randomness -- hard to test *)
 end
 
 
 module TestQuantumRanker =
 struct
-#ifndef SOLN
-  module G = NamedGraph
-#else
-  module G = NamedGraph_soln
-#endif
+  module G = G.NamedGraph
   let g = G.from_edges [("a","b") ;
                         ("a","c") ;
                         ("b","c") ;
                         ("c","a")]
 
-  module NS = NodeScore (struct
+  module NS = NS.NodeScore (struct
                            type node = string
-                           let compare = string_compare
+                           let compare = Order.string_compare
                            let string_of_node = fun x -> x
                            let gen () = ""
                          end);;
-
+  (* Uncomment this to test! 
   module Ranker = QuantumRanker (G) (NS)
     (struct
        let alpha = 0.01
        let num_steps = 1
        let debug = true
      end)
-
+  
   let ns = Ranker.rank g
   let _ = Printf.printf "Testing Quantum ranker:\n %s\n"
     (NS.string_of_node_score_map ns)
+  *) 
 
 (* That's the problem with randomness -- hard to test *)
 end
-*)
 
 (* change this to change which ranker we use! *)
 module EngineRanker = InDegreeRanker (PageGraph) (PageScore)
