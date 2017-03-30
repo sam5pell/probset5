@@ -259,16 +259,55 @@ module ListSet (C: COMPARABLE) : (SET with type elt = C.t) =
   updating the definition of the Make functor below.
 *)
 module DictSet(C : COMPARABLE) : (SET with type elt = C.t) =
-    ListSet(C)
-(*
-    struct
-    module D = Dict.Make(struct
-        (* fill this in! *)
-      end)
+  struct
+      module D = Dict.Make 
+        (struct
+          type key = C.t
+          type value = unit
+          let compare key1 key2 = C.compare key1 key2
+          let string_of_key k = C.string_of_t k
+          let string_of_value _ = "()" 
+          let gen_key () = C.gen ()
+          let gen_key_random () = C.gen_random ()
+          let gen_key_gt k = C.gen_gt k
+          let gen_key_lt k = C.gen_lt k
+          let gen_key_between key1 key2 = C.gen_between key1 key2
+          let gen_value () = ()
+          let gen_pair () = (C.gen (), ())
+        end)
 
     type elt = D.key
     type set = D.dict
-    let empty = ???
+    let empty = D.empty
+
+    let is_empty (s : set) : bool = s = empty
+
+    let insert (s : set) (e : elt) = D.insert s e ()
+
+    let singleton (e : elt) : set = insert empty e
+
+    let choose (s : set) : (elt * set) option =
+      match D.choose s with
+      | None -> None
+      | Some (e, (), rest) -> Some (e, rest)
+
+    let rec union (set1 : set) (set2 : set) : set =
+      match choose set1 with
+      | None -> set2
+      | Some (e, rest) -> union rest (insert set2 e)
+
+    let member (s : set) (e : elt) : bool = D.member s e
+
+    let rec intersect (set1 : set) (set2 : set) : set =
+      match choose set1 with
+      | None -> empty
+      | Some (e, rest) -> if member set2 e then
+                            insert (intersect rest set2) e
+                          else intersect rest set2
+
+    let remove (s : set) (e : elt) : set = D.remove s e
+
+    let rec fold f u d = fold (fun a b -> f a b) u d
 
     (* implement the rest of the functions in the signature! *)
 
@@ -281,10 +320,117 @@ module DictSet(C : COMPARABLE) : (SET with type elt = C.t) =
        functions. *)
 
     (* Add your test functions to run_tests *)
-    let run_tests () =
+    
+    let rec create_list (length : int) : elt list =
+      if length <= 0 then []
+      else (C.gen_random ()) :: (create_list (length - 1))
+
+    let ordered_list (length : int) : elt list = 
+      let rec ordered s length = 
+        if length <= 0 then []
+        else s :: (ordered (C.gen_gt s) (length - 1)) in
+      ordered (C.gen()) length
+
+    let add_to_lists (s : set) (l : elt list) : set = 
+      List.fold_left (fun a b -> insert a b) s l 
+
+    (* tested in test_insert_and remove *)
+    let test_insert () =
+      let e1 = create_list 10 in 
+      let e2 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      let s2 = add_to_lists s1 e2 in
+      List.iter (fun e -> assert (member s1 e)) e1 ;
+      List.iter (fun e -> assert (member s2 e)) e1 ;
+      List.iter (fun e -> assert (member s2 e)) e2 ;
       ()
-end
-*)
+
+
+    (* tested in test_insert_and remove *)
+    let test_remove () =
+      let e1 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      (*let s1_empty = List.fold_right (fun a b -> remove a b) s1 e1 in*)
+      List.iter (fun e -> assert( not (member empty e))) e1 ;
+      () 
+
+    let test_union () =
+      assert((union empty empty) = empty);
+      let e1 = create_list 20 in 
+      let e2 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      let s2 = add_to_lists empty e2 in      
+      let together = union s1 s2 in
+      assert((union empty s1) = s1);
+      List.iter (fun e -> assert(member together e)) e1;
+      List.iter (fun e -> assert(member together e)) e2;
+      ()
+
+    let test_intersect () =
+      assert((intersect empty empty) = empty);
+      let e1 = create_list 20 in 
+      let e2 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      let s2 = add_to_lists empty e2 in      
+      let overlap = intersect s1 s2 in
+      assert((intersect empty s1) = empty);
+      assert (fold (fun a b ->
+                    member s1 a && member s2 a && b) true overlap);
+      ()
+
+    let test_member () =
+      let e1 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      List.iter (fun e -> assert (not (member empty e))) e1;
+      (*let s2 = List.fold_right (fun a b -> remove a b) e1 s1 in*)
+      List.iter (fun e -> assert (not (member empty e))) e1;
+      ()
+
+    let test_choose () =
+      assert ((choose empty) = None);
+      let e1 = C.gen() in
+      let s1 = insert empty e1 in
+      assert (choose s1 = Some (e1, empty));
+      ()
+
+    let test_fold () =
+      let e1 = create_list 20 in
+      let e2 = create_list 20 in
+      let s1 = add_to_lists empty e1 in
+      let s2 = add_to_lists empty e2 in
+      let overlap = intersect s1 s2 in
+      assert (fold (fun a b -> member s1 a && b) true empty);
+      assert (not (fold (fun a b -> member s1 a && b) false empty));
+      assert (fold (fun a b -> member s1 a || member s2 a && b) true overlap);
+      ()
+
+    let test_is_empty () =
+      assert (is_empty empty);
+      let e1 = create_list 20 in 
+      let s1 = add_to_lists empty e1 in
+      assert (not (is_empty s1));
+      ()
+
+    let test_singleton () =
+      let e1 = C.gen() in 
+      let s1 = insert empty e1 in
+      let s2 = singleton e1 in
+      assert (s1 = s2);
+      ()
+
+    let run_tests () =
+      test_insert () ;
+      test_remove () ;
+      test_union () ;
+      test_intersect () ;
+      test_member () ;
+      test_choose () ;
+      test_fold () ;
+      test_is_empty () ;
+      test_singleton () ;
+
+  end
+
 
 (*----------------------------------------------------------------------
   Running the tests.
@@ -300,11 +446,11 @@ module IntListSet = ListSet(IntComparable) ;;
    Uncomment out the lines below when you are ready to test your set
    implementation based on dictionaries. *)
 
-(*
+
 module IntDictSet = DictSet(IntComparable) ;;
 
-let _ = IntDictSet.run_tests();;
- *)
+let _ = IntDictSet.run_tests ();;
+ 
 
 (*----------------------------------------------------------------------
   Make -- a functor that creates a set module by calling the ListSet
@@ -316,5 +462,5 @@ let _ = IntDictSet.run_tests();;
 module Make (C : COMPARABLE) : (SET with type elt = C.t) =
   (* Change this line to use the dictionary implementation of sets
      when you are finished. *)
-  ListSet (C)
-  (* DictSet (C) *)
+  (*ListSet (C)*)
+  DictSet (C) 
