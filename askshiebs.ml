@@ -77,11 +77,11 @@ future assignments.
 ......................................................................*)
 
 (* First part: Implementing the crawler *)
-let minutes_spent_on_crawl () : int = failwith "not provided" ;;
+let minutes_spent_on_crawl () : int = 240 ;;
 
 (* Second part: Sets as dictionaries *)
-let minutes_spent_on_sets () : int = failwith "not provided" ;;
+let minutes_spent_on_sets () : int = 300 ;;
 
 (* Third part: Testing the performance of the implementations *)
-let minutes_spent_on_performance () : int = failwith "not provided" ;;
+let minutes_spent_on_performance () : int = 360 ;;
 
