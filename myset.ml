@@ -428,7 +428,6 @@ module DictSet(C : COMPARABLE) : (SET with type elt = C.t) =
       test_fold () ;
       test_is_empty () ;
       test_singleton () ;
-
   end
 
 
@@ -463,4 +462,4 @@ module Make (C : COMPARABLE) : (SET with type elt = C.t) =
   (* Change this line to use the dictionary implementation of sets
      when you are finished. *)
   (*ListSet (C)*)
-  DictSet (C) 
+  DictSet (C)
