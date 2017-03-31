@@ -1,4 +1,4 @@
-print_string "hi there stranger\n";;
+(*print_string "hi there stranger\n";;
 
 
 
@@ -22,3 +22,5 @@ let main () =
   time_crawler crawler num_pages_to_search initial_link ;;
 
 main ();;
+
+*)
